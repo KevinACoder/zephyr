@@ -80,8 +80,94 @@
 		compatible = "rockchip,rk3568-uart", "ns16550";
 		reg = <0xfe660000 0x10000>;
 		interrupts = <GIC_SPI 118 IRQ_TYPE_EDGE IRQ_DEFAULT_PRIORITY>;
-		clock-frequency = <12000000>;
+		/* SCLK_UART2 comes from the 24 MHz reference. */
+		clock-frequency = <24000000>;
 		reg-shift = <2>;
 		status = "disabled";
+	};
+
+	/*
+	 * There are no clock, pinctrl or GPIO drivers for RK3568 in the tree.
+	 * The GMAC driver programs the CRU and GRF registers, and the PHY
+	 * reset line, through the syscon mappings below.
+	 */
+	cru: clock-controller@fdd20000 {
+		compatible = "syscon";
+		reg = <0xfdd20000 0x1000>;
+	};
+
+	grf: syscon@fdc60000 {
+		compatible = "syscon";
+		reg = <0xfdc60000 0x10000>;
+	};
+
+	gpio0: gpio@fdd60000 {
+		compatible = "syscon";
+		reg = <0xfdd60000 0x100>;
+	};
+
+	gpio1: gpio@fe740000 {
+		compatible = "syscon";
+		reg = <0xfe740000 0x100>;
+	};
+
+	gpio2: gpio@fe750000 {
+		compatible = "syscon";
+		reg = <0xfe750000 0x100>;
+	};
+
+	gpio3: gpio@fe760000 {
+		compatible = "syscon";
+		reg = <0xfe760000 0x100>;
+	};
+
+	gpio4: gpio@fe770000 {
+		compatible = "syscon";
+		reg = <0xfe770000 0x100>;
+	};
+
+	gmac0: ethernet@fe2a0000 {
+		compatible = "rockchip,rk3568-gmac", "snps,dwmac";
+		reg = <0xfe2a0000 0x10000>;
+		interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+		rockchip,grf = <&grf>;
+		rockchip,cru = <&cru>;
+		rockchip,phy-reset-bank = <&gpio2>;
+		rockchip,reset-pin = <9>;
+		snps,clk-csr = <3>;
+		snps,multicast-filter-bins = <64>;
+		snps,perfect-filter-entries = <1>;
+		phy-connection-type = "rgmii";
+		status = "disabled";
+
+		mdio0: mdio {
+			compatible = "snps,dwmac-mdio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clock-frequency = <2500000>;
+			status = "disabled";
+		};
+	};
+
+	gmac1: ethernet@fe010000 {
+		compatible = "rockchip,rk3568-gmac", "snps,dwmac";
+		reg = <0xfe010000 0x10000>;
+		interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL IRQ_DEFAULT_PRIORITY>;
+		rockchip,grf = <&grf>;
+		rockchip,cru = <&cru>;
+		rockchip,phy-reset-bank = <&gpio3>;
+		rockchip,reset-pin = <18>;
+		snps,clk-csr = <3>;
+		snps,multicast-filter-bins = <64>;
+		snps,perfect-filter-entries = <1>;
+		phy-connection-type = "rgmii";
+		status = "disabled";
+
+		mdio1: mdio {
+			compatible = "snps,dwmac-mdio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clock-frequency = <2500000>;
+		};
 	};
 };

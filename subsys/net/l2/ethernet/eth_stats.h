@@ -122,6 +122,24 @@ static inline void eth_stats_update_errors_rx(struct net_if *iface)
 	}
 }
 
+static inline void eth_stats_update_no_buffer_rx(struct net_if *iface)
+{
+	struct net_stats_eth *stats = eth_stats_get_common(iface);
+
+	if (stats != NULL) {
+		stats->error_details.rx_no_buffer_count++;
+	}
+}
+
+static inline void eth_stats_update_over_errors_rx(struct net_if *iface)
+{
+	struct net_stats_eth *stats = eth_stats_get_common(iface);
+
+	if (stats != NULL) {
+		stats->error_details.rx_over_errors++;
+	}
+}
+
 static inline void eth_stats_update_errors_tx(struct net_if *iface)
 {
 	struct net_stats_eth *stats = eth_stats_get_common(iface);
@@ -151,6 +169,8 @@ static inline void eth_stats_update_unknown_protocol(struct net_if *iface)
 #define eth_stats_update_multicast_rx(iface)
 #define eth_stats_update_multicast_tx(iface)
 #define eth_stats_update_errors_rx(iface)
+#define eth_stats_update_no_buffer_rx(iface)
+#define eth_stats_update_over_errors_rx(iface)
 #define eth_stats_update_errors_tx(iface)
 #define eth_stats_update_unknown_protocol(iface)
 

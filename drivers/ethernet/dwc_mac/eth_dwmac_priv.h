@@ -280,6 +280,13 @@ void dwmac_isr(const struct device *ddev);
  * default implementation does nothing.
  */
 void dwmac_platform_link_speed_changed(const struct device *dev, enum phy_link_speed speed);
+/*
+ * Called right before the DMA software reset is asserted (enter = true) and
+ * right after it has completed (enter = false). Platforms whose reset only
+ * completes with a particular clock path selected override this to switch that
+ * path for the duration of the reset. The default implementation does nothing.
+ */
+void dwmac_platform_swr_quirk(const struct device *dev, bool enter);
 #if defined(CONFIG_PTP_CLOCK_DWC_MAC)
 const struct device *dwmac_get_ptp_clock(const struct device *dev, struct net_if *iface);
 #endif

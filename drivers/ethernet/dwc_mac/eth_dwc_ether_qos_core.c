@@ -352,11 +352,13 @@ static void dwmac_receive(const struct device *dev)
 		if (des3_val & RDES3_FD) {
 			p->rx_bytes = 0;
 			if (p->rx_pkt != NULL) {
+				eth_stats_update_over_errors_rx(p->iface);
 				eth_stats_update_errors_rx(p->iface);
 				net_pkt_unref(p->rx_pkt);
 			}
 			p->rx_pkt = net_pkt_rx_alloc_on_iface(p->iface, K_NO_WAIT);
 			if (p->rx_pkt == NULL) {
+				eth_stats_update_no_buffer_rx(p->iface);
 				eth_stats_update_errors_rx(p->iface);
 			}
 		}
@@ -607,6 +609,12 @@ __weak void dwmac_platform_link_speed_changed(const struct device *dev, enum phy
 	ARG_UNUSED(speed);
 }
 
+__weak void dwmac_platform_swr_quirk(const struct device *dev, bool enter)
+{
+	ARG_UNUSED(dev);
+	ARG_UNUSED(enter);
+}
+
 static void phy_link_state_changed(const struct device *phy_dev,
 				   struct phy_link_state *state,
 				   void *user_data)
@@ -823,14 +831,17 @@ int dwmac_probe(const struct device *dev)
 		 "This driver expects DWC-ETHERNET version >= 4.00");
 
 	/* resets all of the MAC internal registers and logic */
+	dwmac_platform_swr_quirk(dev, true);
 	DWMAC_REG_WRITE(DMA_MODE, DMA_MODE_SWR);
 	timeout = sys_timepoint_calc(K_MSEC(100));
 	while (DWMAC_REG_READ(DMA_MODE) & DMA_MODE_SWR) {
 		if (sys_timepoint_expired(timeout)) {
 			LOG_ERR("unable to reset hardware");
+			dwmac_platform_swr_quirk(dev, false);
 			return -EIO;
 		}
 	}
+	dwmac_platform_swr_quirk(dev, false);
 
 	/* get configured hardware features */
 	p->feature0 = DWMAC_REG_READ(MAC_HW_FEATURE0);

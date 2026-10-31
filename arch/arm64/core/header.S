@@ -18,7 +18,14 @@
 #warning "Can't determine page size for header flags"
 #endif
 
-#define HEADER_FLAGS	(HEADER_PGSIZE << 1)
+/*
+ * Flags field of the arm64 Image header (Documentation/arch/arm64/booting.rst):
+ * bits 2:1 carry the page size, bit 3 tells the bootloader that the 2 MiB
+ * aligned base of the image may be anywhere in RAM, i.e. it must not relocate
+ * the image to the start of RAM. Zephyr runs at its link address, so the
+ * image has to be entered where the bootloader loaded it.
+ */
+#define HEADER_FLAGS	((HEADER_PGSIZE << 1) | BIT(3))
 
 _ASM_FILE_PROLOGUE
 

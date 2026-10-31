@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 zhugengyu
+# SPDX-License-Identifier: Apache-2.0
+
+title: Rockchip RK3568 GMAC
+
+description: |
+  Rockchip RK3568 Gigabit Ethernet MAC based on Synopsys DesignWare MAC.
+
+  RK3568 has no clock, pinctrl, reset or GPIO drivers in the tree, so the
+  CRU clock gates, the GRF pin mux, the RGMII delay configuration and the
+  PHY reset line are programmed by the driver through syscon regions.
+
+compatible: "rockchip,rk3568-gmac"
+
+include:
+  - name: snps,dwmac.yaml
+
+properties:
+  reg:
+    required: true
+
+  interrupts:
+    required: true
+
+  rockchip,grf:
+    type: phandle
+    required: true
+    description: |
+      Phandle to the system GRF syscon, which holds the RGMII delay
+      configuration and the GMAC IO mux registers.
+
+  rockchip,cru:
+    type: phandle
+    required: true
+    description: |
+      Phandle to the CRU syscon, which holds the clock gates, the soft
+      resets and the GMAC clock mux selectors.
+
+  rockchip,phy-reset-bank:
+    type: phandle
+    required: true
+    description: |
+      Phandle to the syscon mapping of the GPIO bank connected to the PHY
+      reset line. There is no GPIO driver for RK3568 in the tree, so the
+      bank registers are driven directly by the ethernet driver.
+
+  rockchip,reset-pin:
+    type: int
+    required: true
+    description: |
+      Bit index of the PHY reset line inside the GPIO bank given by
+      rockchip,phy-reset-bank. The line is active low.

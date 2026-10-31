@@ -1,0 +1,9 @@
+sample:
+  description: Benchmark the DWC Ethernet QoS GMAC on Rockchip RK3568
+  name: gmac_bench
+tests:
+  sample.net.gmac_bench:
+    build_only: true
+    platform_allow: roc_rk3568_pc
+    tags:
+      - net

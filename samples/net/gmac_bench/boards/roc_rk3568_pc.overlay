@@ -1,0 +1,45 @@
+/*
+ * Bench wiring of the RK3568 E4AP5G1-ITX board, which is booted with the
+ * ROC-RK3568-PC board support:
+ *
+ *  - the console runs at 115200 baud (the U-Boot/hub bench port),
+ *  - the cabled port is gmac1 at 0xfe010000 with an RTL8211F PHY at MDIO
+ *    address 1 and the PHY reset line on GPIO3 bit 18.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		zephyr,console = &uart2;
+		zephyr,shell-uart = &uart2;
+	};
+};
+
+&uart2 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&gmac1 {
+	status = "okay";
+	phy-handle = <&rgmii_phy1>;
+	local-mac-address = [02 e4 a5 35 68 01];
+};
+
+&mdio1 {
+	rgmii_phy1: ethernet-phy@1 {
+		compatible = "realtek,rtl8211f";
+		reg = <1>;
+		realtek,rgmii-delay = "none";
+	};
+};
+
+/*
+ * The ROC-RK3568-PC board support declares 1 MiB of SRAM. The RK3568 bench
+ * board has 4 GiB of DDR and the benchmark needs deeper buffer pools, so let
+ * Zephyr own the first 16 MiB of DDR starting at 0x40000000.
+ */
+&sram0 {
+	reg = <0x40000000 0x01000000>;
+};

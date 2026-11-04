@@ -1,0 +1,40 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Bench wiring of the RK3568 E4AP5G1-ITX board for the 8188EU image.
+ *
+ * Two things differ from the gmac_bench overlay, and both are load-bearing:
+ *
+ *  - the console runs at 115200 (the hub's bench port), not the board file's
+ *    1.5 Mbaud;
+ *  - the SoC's DDR window is 64 MiB, not 1 MiB.  The image carries a 4 MiB heap,
+ *    a 16 KiB runner stack, the firmware blob and CherryUSB's pools, and the
+ *    Zephyr kernel links its own data/bss into the same region.
+ *
+ * The USB controllers are NOT described in devicetree.  This Zephyr tree has no
+ * USB nodes for RK3568 and the image does not need any: freewificam's board
+ * layer owns the controller registers, the PHY/reset sequence and the INTIDs,
+ * and the module maps the apertures with device_map() before USB init.  Adding
+ * dtsi nodes would duplicate that knowledge in a second place.
+ */
+
+/ {
+	chosen {
+		zephyr,console = &uart2;
+		zephyr,shell-uart = &uart2;
+	};
+};
+
+&uart2 {
+	current-speed = <115200>;
+	status = "okay";
+};
+
+/*
+ * The board support declares 1 MiB of SRAM at 0x40000000.  The bench board has
+ * 4 GiB of DDR and this image needs far more than 1 MiB, so let Zephyr own the
+ * first 64 MiB.
+ */
+&sram0 {
+	reg = <0x40000000 0x04000000>;
+};

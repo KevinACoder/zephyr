@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# freewificam on Zephyr.
+#
+# The module compiles the freewificam tree in place (no copy, no sparse
+# checkout) with a third kernel backend: platform/os/zephyr/, which serves the
+# CMSIS-RTOS2 surface directly on Zephyr primitives.  Nothing above that layer
+# changes, so the wireless components and CherryUSB are the board-proven bytes.
+#
+# The image configuration is still owned by freewificam: this Kconfig only
+# names the profile, and the CMake side asks freewificam's own generator for
+# freewificam_config.h.  There is no second configuration system here.
+
+menuconfig FREEWIFICAM
+	bool "freewificam wireless stack"
+	depends on NETWORKING || !NETWORKING
+	help
+	  Build the freewificam RTOS wireless stack (net80211 + linuxkpi + a
+	  vendor driver) against Zephyr.  The kernel backend is
+	  platform/os/zephyr/cmsis2_zephyr.c; Zephyr's own CMSIS-RTOS2
+	  subsystem is not used.
+
+if FREEWIFICAM
+
+config FREEWIFICAM_PROFILE
+	string "freewificam image profile"
+	default "rtl8xxxu-8188eu-data"
+	help
+	  Name of the defconfig under freewificam/tests/board/rtos/configs/
+	  (without the .defconfig suffix).  Its generated
+	  freewificam_config.h is what every freewificam translation unit
+	  sees, so the profile - not this Kconfig file - owns the case set,
+	  the wireless line, the board and the backend.
+
+config FREEWIFICAM_PATH
+	string "freewificam tree"
+	default "../freewificam"
+	help
+	  Path to the freewificam checkout, relative to the Zephyr tree root
+	  (the default assumes the two trees are siblings).
+
+config FREEWIFICAM_DRIVER
+	string "wireless driver line"
+	default "rtl8xxxu"
+	help
+	  Which vendor driver world the module compiles.  Only the lines whose
+	  Zephyr-side platform seams exist may be named here; rtl8xxxu is the
+	  first (8188EU / 8723BU over USB).
+
+endif # FREEWIFICAM
